@@ -9,8 +9,14 @@ model = WhisperForConditionalGeneration.from_pretrained("vinai/PhoWhisper-base")
 def recognition_service(media):
     try:
         array, sample_rate = torchaudio.load(media)
+        print(array.shape)
+        
         if sample_rate > 16000:
-            array = torchaudio.functional.resample(array, orig_freq=sample_rate, new_freq=16000)
+            array = torchaudio.transforms.Resample( sample_rate, 16000)(array)
+        if array.size(dim=0) >1:
+            array = array.mean(dim=0)
+
+        array = array.squeeze(dim=0)
 
         input_features = processor(array, sampling_rate=sample_rate, return_tensors="pt").input_features
 
