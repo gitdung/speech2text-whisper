@@ -2,7 +2,7 @@ from fastapi import HTTPException
 import torch
 import torchaudio
 from transformers import WhisperForConditionalGeneration, WhisperProcessor
-
+import io
 processor = WhisperProcessor.from_pretrained("vinai/PhoWhisper-base")
 model = WhisperForConditionalGeneration.from_pretrained("vinai/PhoWhisper-base")
 

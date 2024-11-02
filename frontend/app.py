@@ -1,10 +1,10 @@
 import streamlit as st
 from st_audiorec import st_audiorec
 import os
+import requests
+import io
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # app.py dir
-AUDIO_SAVE_PATH = os.path.normpath(os.path.join(BASE_DIR, "..", "audio"))  # audio dir
-os.makedirs(AUDIO_SAVE_PATH, exist_ok=True)
+BACKEND_URL = "http://127.0.0.1:8001/predict"
 
 # Page layout and header
 st.set_page_config(page_title="Audio Recorder", page_icon="🎙️", layout="centered")
@@ -20,14 +20,17 @@ if wav_audio_data is not None:
     if len(wav_audio_data) > 44:
         st.success("🎉 Ghi âm thành công! Đang phát lại âm thanh...")
 
-        if st.button("Lưu file âm thanh"):
-            file_path = os.path.join(AUDIO_SAVE_PATH, "recorded_audio.wav")
+        if st.button("Nhận diện giọng nói"):
+            audio_bytes = io.BytesIO(wav_audio_data)
 
-            with open(file_path, "wb") as f:
-                f.write(wav_audio_data)
+            files = {'file': ('recorded_audio.wav', audio_bytes, 'audio/wav')}
+            response = requests.post(BACKEND_URL, files=files)
 
-            st.success(f"✅ File đã được lưu thành công tại: `{file_path}`")
-            st.audio(file_path, format="audio/wav")
+            if response.status_code == 200:
+                result = response.json().get("result")
+                st.write("**Transcription**:", result)
+            else:
+                st.error("❌ Xảy ra lỗi khi nhận diện giọng nói.")
     else:
         st.warning("⚠️ Không có dữ liệu ghi âm hợp lệ. Vui lòng thử lại.")
 else:
