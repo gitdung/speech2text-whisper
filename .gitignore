@@ -1,3 +1,5 @@
 venv
 /backend/__pycache__/
-audio
+/backend/package.json
+/backend/package-lock.json
+/backend/node_modules
