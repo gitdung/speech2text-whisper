@@ -1,6 +1,6 @@
 from fastapi import HTTPException, APIRouter, FastAPI, Response, UploadFile, File
 from service import recognition_service
-
+import io
 router = APIRouter()
 
 @router.get("/")
