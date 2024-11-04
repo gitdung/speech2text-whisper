@@ -23,6 +23,14 @@ def recognition_service(media):
 
         predicted_ids = model.generate(input_features)
         transcription = processor.batch_decode(predicted_ids, skip_special_tokens=False)
-        return transcription
+
+        transcription_cleaned = transcription[0]
+        unwanted_tokens = ["<|startoftranscript|>", "<|vi|>", "<|transcribe|>", "<|notimestamps|>"]
+
+        for token in unwanted_tokens:
+            transcription_cleaned = transcription_cleaned.replace(token, "")
+
+        transcription_cleaned = transcription_cleaned.strip()
+        return transcription_cleaned
     except Exception as e:
         raise ValueError(e)
