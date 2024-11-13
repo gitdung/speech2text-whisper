@@ -1,5 +1,6 @@
 venv
 /backend/__pycache__/
-/backend/package.json
-/backend/package-lock.json
-/backend/node_modules
+finetuning_recipe/wandb
+finetuning_recipe/whisper-base-vi
+.idea
+**/__pycache__

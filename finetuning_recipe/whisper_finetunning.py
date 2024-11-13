@@ -10,10 +10,8 @@ from datasets import DatasetDict, load_dataset
 from omegaconf import DictConfig, OmegaConf
 import torchaudio
 from dataclasses import dataclass
+from utils.utils import get_configs
 
-feature_extractor = WhisperFeatureExtractor.from_pretrained("openai/whisper-base")
-tokenizer = WhisperTokenizer.from_pretrained("vinai/PhoWhisper-base")
-processor = WhisperProcessor.from_pretrained("vinai/PhoWhisper-base")
 from typing import Any, List, Optional, Dict, Union
 import torch
 import evaluate
@@ -49,7 +47,7 @@ class DataCollatorSpeech:
 
         # if bos token is appended in previous tokenization step,
         # cut bos token here as it's append later anyways
-        if (labels[:, 0] == self.decoder_start_token_id).all().cpu().item():
+        if (labels[:, 0] == self.decoder_start_token_id).all().item():
             labels = labels[:, 1:]
 
         batch["labels"] = labels
@@ -82,7 +80,7 @@ class WhisperFinetuner:
         # data collator
         self.data_collator = DataCollatorSpeech(
             processor=self.processor,
-            decoder_start_token_id=self.conf.model.decoder_start_token_id,
+            decoder_start_token_id=self.model.config.decoder_start_token_id,
         )
 
         # metric
@@ -109,7 +107,7 @@ class WhisperFinetuner:
             return_tensors="pt",
         ).input_features[0]
 
-        batch["transcription"] = self.tokenizer(batch["transcription"]).input_ids
+        batch["labels"] = self.tokenizer(batch["transcription"]).input_ids
 
         return batch
 
@@ -164,3 +162,11 @@ class WhisperFinetuner:
         )
 
         trainer.train()
+
+if __name__ == "__main__":
+    conf = get_configs("./configs/default.yaml")
+    feature_extractor = WhisperFeatureExtractor.from_pretrained("openai/whisper-base")
+    tokenizer = WhisperTokenizer.from_pretrained("vinai/PhoWhisper-base")
+    processor = WhisperProcessor.from_pretrained("vinai/PhoWhisper-base")
+    fine_tuner = WhisperFinetuner(conf, tokenizer, feature_extractor, processor)
+    fine_tuner.train()
