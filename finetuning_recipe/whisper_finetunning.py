@@ -76,6 +76,8 @@ class WhisperFinetuner:
             self.conf.dataset, split="train+validation"
         )
         self.dataset["test"] = load_dataset(self.conf.dataset, split="test")
+        self.dataset["train"] = self.dataset["train"].map(self.preprocess_ds)
+        self.dataset["test"] = self.dataset["test"].map(self.preprocess_ds)
 
         # data collator
         self.data_collator = DataCollatorSpeech(
@@ -88,21 +90,22 @@ class WhisperFinetuner:
 
     def preprocess_ds(self, batch):
         audio = batch["audio"]
-        waveform, sample_rate = torchaudio.load(audio)
+        waveform = torch.from_numpy(audio["array"])
+        # waveform, sample_rate = torchaudio.load(audio)
 
-        if sample_rate != self.conf.processor.sampling_rate:
-            waveform = torchaudio.transforms.Resample(
-                orig_freq=sample_rate, new_freq=self.conf.processor.sampling_rate
-            )(waveform)
+        # if sample_rate != self.conf.processor.sampling_rate:
+        #     waveform = torchaudio.transforms.Resample(
+        #         orig_freq=sample_rate, new_freq=self.conf.processor.sampling_rate
+        #     )(waveform)
 
-        if waveform.size(dim=0) > 1:
-            waveform = waveform.mean(dim=0)
+        # if waveform.size(dim=0) > 1:
+        #     waveform = waveform.mean(dim=0)
 
-        waveform = waveform.squeeze(dim=0)
+        # waveform = waveform.squeeze(dim=0)
 
         batch["input_features"] = self.feature_extractor(
             waveform,
-            sampling_rate=self.confs.processor.sampling_rate,
+            sampling_rate=self.conf.processor.sampling_rate,
             return_tensors="pt",
         ).input_features[0]
 
@@ -124,7 +127,7 @@ class WhisperFinetuner:
 
     def setup_trainer(self):
         training_args = Seq2SeqTrainingArguments(
-            output_dir="./whisper-small-vi",  # change to a repo name of your choice
+            output_dir="./whisper-base-vi",  # change to a repo name of your choice
             per_device_train_batch_size=16,
             gradient_accumulation_steps=1,  # increase by 2x for every 2x decrease in batch size
             learning_rate=1e-5,
@@ -143,7 +146,6 @@ class WhisperFinetuner:
             load_best_model_at_end=True,
             metric_for_best_model="wer",
             greater_is_better=False,
-            push_to_hub=True,
         )
 
         return training_args
