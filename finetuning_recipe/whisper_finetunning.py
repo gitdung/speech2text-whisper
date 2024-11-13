@@ -89,17 +89,6 @@ class WhisperFinetuner:
     def preprocess_ds(self, batch):
         audio = batch["audio"]
         waveform = torch.from_numpy(audio["array"])
-        # waveform, sample_rate = torchaudio.load(audio)
-
-        # if sample_rate != self.conf.processor.sampling_rate:
-        #     waveform = torchaudio.transforms.Resample(
-        #         orig_freq=sample_rate, new_freq=self.conf.processor.sampling_rate
-        #     )(waveform)
-
-        # if waveform.size(dim=0) > 1:
-        #     waveform = waveform.mean(dim=0)
-
-        # waveform = waveform.squeeze(dim=0)
 
         batch["input_features"] = self.feature_extractor(
             waveform,
