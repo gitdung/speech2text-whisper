@@ -1,0 +1,38 @@
+# config contains the configs params for training and setup model architecture
+# model architecture, processor parameters and trainer params
+padding_idx: ???
+dataset: "quocanh34/viet_vivos"
+
+model:
+  name: "openai/whisper-base"
+  # setup common config
+  # model params
+  in_dim: 80 # mel spec dim
+  d_model: 512
+  dropout: 0.1
+
+  # define n_vocab for embedding for 2 token start, end
+  num_classes: ???
+  decoder_start_token_id: 
+
+processor:
+  sampling_rate: 16000
+  num_mel_bins: 80
+
+trainer:
+  seed: 47
+  epochs: 30
+  batch_size: 16
+
+  # setup train, dev, test path
+  train_path: ???
+  dev_path: ???
+  test_path: ???
+
+  # audio root_dir and vocab dir
+  audio_root_dir: ???
+  vocab_dir: ???
+
+  # hyperparameters
+  lr: ???
+  weigh_decay: ???
