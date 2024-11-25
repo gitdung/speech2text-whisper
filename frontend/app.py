@@ -1,60 +1,85 @@
-import streamlit as st
-from st_audiorec import st_audiorec
 import os
+import time
 import requests
+import gradio as gr
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # app.py dir
-AUDIO_SAVE_PATH = os.path.normpath(os.path.join(BASE_DIR, "..", "audio"))  # audio dir
-os.makedirs(AUDIO_SAVE_PATH, exist_ok=True)
-
-# Backend URL
+# URL backend để xử lý nhận diện giọng nói
 BACKEND_URL = "http://127.0.0.1:8001/predict"
 
-# Page layout and header
-st.set_page_config(page_title="Audio Recorder", page_icon="🎙️", layout="centered")
-st.title("🎙️ Voice Recognition Application")
-st.subheader("Record and Save Your Audio")
 
-st.write("Nhấn **'Start Recording'** và nói vào micro để ghi âm:")
+def handle_audio(audio_path):
+    """
+    Xử lý ghi âm và nhận diện âm thanh từ backend.
+    """
+    if audio_path is None:
+        return "⚠️ Không có dữ liệu ghi âm. Vui lòng thử lại.", None
 
-# Audio recording
-wav_audio_data = st_audiorec()
+    try:
+        # Gửi file đến backend để nhận diện
+        with open(audio_path, "rb") as audio_file:
+            files = {"file": (os.path.basename(audio_path), audio_file, "audio/wav")}
+            response = requests.post(BACKEND_URL, files=files)
+            response.raise_for_status()
 
-# Check if audio was recorded
-if wav_audio_data is not None:
-    if len(wav_audio_data) > 44:
-        st.success("🎉 Ghi âm thành công! Đang phát lại âm thanh...")
+            # Xử lý kết quả từ backend
+            if response.status_code == 200:
+                result = response.json().get("result", "Không có kết quả")
+                return f"✅ Kết quả nhận diện: {result}", audio_path
+    except requests.exceptions.RequestException as e:
+        return f"❌ Lỗi khi gửi file đến backend: {e}", None
 
-        if st.button("Lưu file âm thanh"):
-            file_path = os.path.join(AUDIO_SAVE_PATH, "recorded_audio.wav")
+    return "❌ Xử lý thất bại.", None
 
-            # Save audio file
-            with open(file_path, "wb") as f:
-                f.write(wav_audio_data)
 
-            st.success(f"✅ File đã được lưu thành công tại: `{file_path}`")
-            st.audio(file_path, format="audio/wav")
+def main(audio_path):
+    """
+    Hàm chính xử lý đầu vào và trả về kết quả nhận diện.
+    """
+    result_text, recorded_audio = handle_audio(audio_path)
+    return result_text, recorded_audio
 
-        if st.button("Nhận diện âm thanh"):
-            file_path = os.path.join(AUDIO_SAVE_PATH, "recorded_audio.wav")
 
-            if os.path.exists(file_path):
-                with open(file_path, "rb") as audio_file:
-                    files = {"file": ("recorded_audio.wav", audio_file, "audio/wav")}
-                    response = requests.post(BACKEND_URL, files=files)
+# Khởi tạo giao diện với phong cách
+with gr.Blocks(css="""
+    body {
+        background-color: #f4f4f4;
+    }
+    .gradio-container {
+        background-color: #ffffff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+    }
+    #pred-btn {
+        background-color: #4CAF50;
+        color: white;
+        font-size: 18px;
+    }
+""") as app:
+    gr.Markdown(
+        """
+        <div style="text-align: center;">
+            <h1 style="color: #43bce8;">🎙️ Ứng Dụng Nhận Diện Giọng Nói Tiếng Việt</h1>
+        </div>
+        """
+    )
 
-                    if response.status_code == 200:
-                        result = response.json().get("result", "Không có kết quả")
-                        st.write("**Kết quả nhận diện:**", result)
-                    else:
-                        st.error("Lỗi khi gửi file đến backend")
-            else:
-                st.warning("⚠️ Vui lòng lưu file âm thanh trước khi nhận diện.")
-    else:
-        st.warning("⚠️ Không có dữ liệu ghi âm hợp lệ. Vui lòng thử lại.")
-else:
-    st.info("ℹ️ Vui lòng nhấn **'Start Recording'** và nói vào micro.")
+    with gr.Row():
+        with gr.Column(scale=2):
+            gr.Markdown('<h2 style="color: #43bce8;">Ghi Âm Âm Thanh</h3>')
+            audio_input = gr.Audio(type="filepath", label="Ghi âm âm thanh", interactive=True)
 
-# Footer
-st.markdown("---")
-st.caption("Ứng dụng nhận diện giọng nói dựa trên Whisper Model")
+        with gr.Column(scale=1):
+            gr.Markdown('<h2 style="color: #43bce8;">Kết Quả Nhận Diện</h3>')
+            result_text = gr.Textbox(label="Kết quả", interactive=False)
+            playback_audio = gr.Audio(label="Âm thanh đã ghi")
+
+    with gr.Row():
+        pred_btn = gr.Button("🔍 Nhận Diện", variant="primary", elem_id="pred-btn")
+
+    # Gán nút xử lý sự kiện
+    pred_btn.click(fn=main, inputs=audio_input, outputs=[result_text, playback_audio])
+
+# Khởi chạy ứng dụng
+if __name__ == "__main__":
+    app.launch(share=True)
