@@ -43,6 +43,8 @@ with gr.Blocks(css="""
         border: 1px solid #ddd;
         border-radius: 8px;
         padding: 16px;
+        max-width: 60%; /* Chiều ngang tối đa là 60% */
+        margin: auto; /* Căn giữa container */
     }
     #pred-btn {
         background-color: #4CAF50;
@@ -58,18 +60,30 @@ with gr.Blocks(css="""
         """
     )
 
+    # with gr.Row():
+    #     with gr.Column(scale=2):
+    #         gr.Markdown('<h2 style="color: #43bce8;">Âm Thanh Đầu Vào</h3>')
+    #         audio_input = gr.Audio(type="filepath", interactive=True)
+    #
+    #     with gr.Column(scale=1):
+    #         gr.Markdown('<h2 style="color: #43bce8;">Kết Quả Nhận Diện</h3>')
+    #         result_text = gr.Textbox(label="Kết quả", interactive=False)
+    #         playback_audio = gr.Audio(label="Âm thanh đã ghi")
+
     with gr.Row():
-        with gr.Column(scale=2):
-            gr.Markdown('<h2 style="color: #43bce8;">Âm Thanh Đầu Vào</h3>')
+        with gr.Column(scale=1):
+            gr.Markdown('<h2 style="color: #43bce8;">Âm Thanh Đầu Vào</h2>')
             audio_input = gr.Audio(type="filepath", interactive=True)
 
+    with gr.Row():
         with gr.Column(scale=1):
-            gr.Markdown('<h2 style="color: #43bce8;">Kết Quả Nhận Diện</h3>')
+            gr.Markdown('<h2 style="color: #43bce8;">Kết Quả Nhận Diện</h2>')
             result_text = gr.Textbox(label="Kết quả", interactive=False)
             playback_audio = gr.Audio(label="Âm thanh đã ghi")
 
     with gr.Row():
-        pred_btn = gr.Button("🔍 Nhận Diện", variant="primary", elem_id="pred-btn")
+        with gr.Column(scale=1):
+            pred_btn = gr.Button("🔍 Nhận Diện", variant="primary", elem_id="pred-btn")
 
     # Gán nút xử lý sự kiện
     # pred_btn.click(fn=main, inputs=audio_input, outputs=[result_text])
