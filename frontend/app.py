@@ -8,9 +8,6 @@ BACKEND_URL = "http://127.0.0.1:8001/predict"
 
 
 def handle_audio(audio_path):
-    """
-    Xử lý ghi âm và nhận diện âm thanh từ backend.
-    """
     if audio_path is None:
         return "⚠️ Không có dữ liệu ghi âm. Vui lòng thử lại.", None
 
@@ -24,7 +21,7 @@ def handle_audio(audio_path):
             # Xử lý kết quả từ backend
             if response.status_code == 200:
                 result = response.json().get("result", "Không có kết quả")
-                return f"✅ Kết quả nhận diện: {result}", audio_path
+                return result, audio_path
     except requests.exceptions.RequestException as e:
         return f"❌ Lỗi khi gửi file đến backend: {e}", None
 
@@ -32,14 +29,11 @@ def handle_audio(audio_path):
 
 
 def main(audio_path):
-    """
-    Hàm chính xử lý đầu vào và trả về kết quả nhận diện.
-    """
     result_text, recorded_audio = handle_audio(audio_path)
     return result_text, recorded_audio
 
 
-# Khởi tạo giao diện với phong cách
+# UI
 with gr.Blocks(css="""
     body {
         background-color: #f4f4f4;
@@ -53,7 +47,7 @@ with gr.Blocks(css="""
     #pred-btn {
         background-color: #4CAF50;
         color: white;
-        font-size: 18px;
+        font-size: 22px;
     }
 """) as app:
     gr.Markdown(
@@ -66,8 +60,8 @@ with gr.Blocks(css="""
 
     with gr.Row():
         with gr.Column(scale=2):
-            gr.Markdown('<h2 style="color: #43bce8;">Ghi Âm Âm Thanh</h3>')
-            audio_input = gr.Audio(type="filepath", label="Ghi âm âm thanh", interactive=True)
+            gr.Markdown('<h2 style="color: #43bce8;">Âm Thanh Đầu Vào</h3>')
+            audio_input = gr.Audio(type="filepath", interactive=True)
 
         with gr.Column(scale=1):
             gr.Markdown('<h2 style="color: #43bce8;">Kết Quả Nhận Diện</h3>')
@@ -78,6 +72,7 @@ with gr.Blocks(css="""
         pred_btn = gr.Button("🔍 Nhận Diện", variant="primary", elem_id="pred-btn")
 
     # Gán nút xử lý sự kiện
+    # pred_btn.click(fn=main, inputs=audio_input, outputs=[result_text])
     pred_btn.click(fn=main, inputs=audio_input, outputs=[result_text, playback_audio])
 
 # Khởi chạy ứng dụng
