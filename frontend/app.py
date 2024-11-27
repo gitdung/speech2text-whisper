@@ -74,12 +74,13 @@ with gr.Blocks(css="""
         with gr.Column(scale=1):
             gr.Markdown('<h2 style="color: #43bce8;">Âm Thanh Đầu Vào</h2>')
             audio_input = gr.Audio(type="filepath", interactive=True)
+            playback_audio = gr.Audio(label="Âm thanh đã ghi")
 
     with gr.Row():
         with gr.Column(scale=1):
             gr.Markdown('<h2 style="color: #43bce8;">Kết Quả Nhận Diện</h2>')
             result_text = gr.Textbox(label="Kết quả", interactive=False)
-            playback_audio = gr.Audio(label="Âm thanh đã ghi")
+
 
     with gr.Row():
         with gr.Column(scale=1):
