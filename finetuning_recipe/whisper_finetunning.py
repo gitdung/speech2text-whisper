@@ -68,10 +68,13 @@ class WhisperFinetuner:
             self.conf.model.name
         )
 
+        for params in self.model.model.encoder.parameters():
+            params.requires_grad = False
+
         # setup dataset
         self.dataset = DatasetDict()
         self.dataset["train"] = load_dataset(
-            self.conf.dataset, split="train+validation"
+            self.conf.dataset, split="train"
         )
         self.dataset["test"] = load_dataset(self.conf.dataset, split="test")
         self.dataset["train"] = self.dataset["train"].map(self.preprocess_ds)
