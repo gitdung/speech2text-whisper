@@ -1,6 +1,7 @@
 import json
 import os
 import torchaudio
+import torch
 from transformers import AutoProcessor, WhisperForConditionalGeneration
 from jiwer import wer
 
@@ -15,11 +16,25 @@ def load_audio(file_path, target_sr=16000):
 
 
 # Inference trên mô hình PhoWhisper
-def transcribe_audio(file_path, processor, model):
+def transcribe_audio(file_path, processor, model, target_length=3000):
     waveform, sr = load_audio(file_path)
     inputs = processor(waveform, sampling_rate=sr, return_tensors="pt", padding=True)
+
+    # Lấy đặc trưng mel từ processor
+    mel_features = inputs["input_features"]
+
+    # Kiểm tra và điều chỉnh độ dài mel_features
+    if mel_features.size(-1) < target_length:
+        # Padding nếu độ dài nhỏ hơn 3000
+        pad_length = target_length - mel_features.size(-1)
+        mel_features = torch.nn.functional.pad(mel_features, (0, pad_length))
+    elif mel_features.size(-1) > target_length:
+        # Cắt bớt nếu độ dài lớn hơn 3000
+        mel_features = mel_features[:, :, :target_length]
+
+    # Chạy mô hình để dự đoán
     with torch.no_grad():
-        predicted_ids = model.generate(inputs["input_features"])
+        predicted_ids = model.generate(mel_features)
     transcription = processor.batch_decode(predicted_ids, skip_special_tokens=True)[0]
     return transcription
 
@@ -85,7 +100,7 @@ def process_json(json_path, audio_folder, model_name="vinai/PhoWhisper-tiny"):
     print(f"Average WER: {avg_wer:.2f}")
 
     # Ghi kết quả vào file mới
-    output_path = os.path.splitext(json_path)[0] + "_predict.json"
+    output_path = os.path.splitext(json_path)[0] + "_predict_PhoWhisper.json"
     with open(output_path, "w", encoding="utf-8") as outfile:
         json.dump(results, outfile, ensure_ascii=False, indent=4)
     print(f"Results saved to {output_path}")
@@ -94,5 +109,5 @@ def process_json(json_path, audio_folder, model_name="vinai/PhoWhisper-tiny"):
 # Chạy chương trình
 if __name__ == "__main__":
     json_path = "D:\\speech2text-whisper\\data\\vivos_test_lower.json"
-    audio_folder = "audio_folder"
+    audio_folder = "D:\\speech2text-whisper\\data\\vivos_filtered"
     process_json(json_path, audio_folder)

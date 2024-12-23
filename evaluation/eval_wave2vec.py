@@ -87,7 +87,7 @@ def process_json(json_path, audio_folder, model_name="nguyenvulebinh/wav2vec2-ba
     print(f"Average WER: {avg_wer:.2f}")
 
     # Ghi kết quả vào file mới
-    output_path = os.path.splitext(json_path)[0] + "_predict.json"
+    output_path = os.path.splitext(json_path)[0] + "_predict_wave2vec.json"
     with open(output_path, "w", encoding="utf-8") as outfile:
         json.dump(results, outfile, ensure_ascii=False, indent=4)
     print(f"Results saved to {output_path}")
@@ -95,6 +95,6 @@ def process_json(json_path, audio_folder, model_name="nguyenvulebinh/wav2vec2-ba
 
 # Chạy chương trình
 if __name__ == "__main__":
-    json_path = "audio_data.json"
-    audio_folder = "audio_folder"
+    json_path = "D:\\speech2text-whisper\\data\\vivos_test_lower.json"
+    audio_folder = "D:\\speech2text-whisper\\data\\vivos_filtered"
     process_json(json_path, audio_folder)

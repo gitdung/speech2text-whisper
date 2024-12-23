@@ -67,7 +67,53 @@ def lowercase_transcripts(folder_path, file_name):
         print(f"File mới đã được lưu tại: {output_file_path}")
     except Exception as e:
         print(f"Đã xảy ra lỗi: {e}")
+
+def calculate_average_wer(file_paths):
+    total_wer = 0.0
+    count = 0
+
+    for file_path in file_paths:
+        # Kiểm tra xem file có tồn tại hay không
+        if not os.path.isfile(file_path):
+            print(f"File không tồn tại: {file_path}")
+            continue
+
+        # Đọc file JSON
+        with open(file_path, 'r', encoding='utf-8') as file:
+            try:
+                data = json.load(file)
+                wer = data.get('wer')
+
+                if wer is not None:
+                    total_wer += wer
+                    count += 1
+                else:
+                    print(f"Không tìm thấy WER trong file: {file_path}")
+            except json.JSONDecodeError:
+                print(f"Đọc file JSON không thành công: {file_path}")
+
+    # Tính trung bình WER
+    if count > 0:
+        average_wer = total_wer / count
+        return average_wer
+    else:
+        return None  # Nếu không có tệp hợp lệ nào được xử lý
+
+
+# Ví dụ sử dụng
+file_paths = ['file1.json', 'file2.json', 'file3.json']  # Thay đổi danh sách tệp JSON của bạn tại đây
+average_wer = calculate_average_wer(file_paths)
+
+if average_wer is not None:
+    print(f"Trung bình WER: {average_wer}")
+else:
+    print("Không có dữ liệu hợp lệ để tính toán WER.")
+
 if __name__ == "__main__":
-    folder_path = "D:\\speech2text-whisper\\data"
-    file_name = "CommonVoice_test.json"
-    lowercase_transcripts(folder_path, file_name)
+    # lowercase
+    # folder_path = "D:\\speech2text-whisper\\data"
+    # file_name = "CommonVoice_test.json"
+    # lowercase_transcripts(folder_path, file_name)
+
+    # WER
+    calculate_average_wer()
