@@ -27,7 +27,7 @@ def transcribe_audio(file_path, processor, model):
 
 
 # Đọc JSON, duyệt file và tính WER
-def process_json(json_path, audio_folder, model_name="nguyenvulebinh/wav2vec2-large-vi"):
+def process_json(json_path, audio_folder, model_name="nguyenvulebinh/wav2vec2-base-vietnamese-250h"):
     # Load processor và model
     processor = Wav2Vec2Processor.from_pretrained(model_name)
     model = Wav2Vec2ForCTC.from_pretrained(model_name)

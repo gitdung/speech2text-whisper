@@ -25,7 +25,7 @@ def transcribe_audio(file_path, processor, model):
 
 
 # Đọc JSON, duyệt file và tính WER
-def process_json(json_path, audio_folder, model_name="vinai/PhoWhisper-medium"):
+def process_json(json_path, audio_folder, model_name="vinai/PhoWhisper-tiny"):
     # Load processor và model PhoWhisper
     processor = AutoProcessor.from_pretrained(model_name)
     model = WhisperForConditionalGeneration.from_pretrained(model_name)
@@ -93,6 +93,6 @@ def process_json(json_path, audio_folder, model_name="vinai/PhoWhisper-medium"):
 
 # Chạy chương trình
 if __name__ == "__main__":
-    json_path = "audio_data.json"
+    json_path = "D:\\speech2text-whisper\\data\\vivos_test_lower.json"
     audio_folder = "audio_folder"
     process_json(json_path, audio_folder)
