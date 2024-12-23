@@ -4,6 +4,7 @@ import zlib
 from torch import Tensor
 from typing import List
 import json
+import os
 
 
 def get_vocab_meta(path: str):
@@ -40,3 +41,33 @@ def convert_tensor2list(x: Tensor) -> List:
     out = x.cpu().numpy().tolist()
     # print(type(out))
     return out
+def lowercase_transcripts(folder_path, file_name):
+    # Đường dẫn đầy đủ tới file json
+    input_file_path = os.path.join(folder_path, file_name)
+
+    # Tên file mới với hậu tố _lower
+    base_name, ext = os.path.splitext(file_name)
+    output_file_name = f"{base_name}_lower{ext}"
+    output_file_path = os.path.join(folder_path, output_file_name)
+
+    try:
+        # Đọc nội dung file json
+        with open(input_file_path, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+
+        # Chuyển transcript thành chữ thường
+        for entry in data:
+            if 'transcript' in entry:
+                entry['transcript'] = entry['transcript'].lower()
+
+        # Ghi nội dung mới vào file _lower
+        with open(output_file_path, 'w', encoding='utf-8') as file:
+            json.dump(data, file, ensure_ascii=False, indent=4)
+
+        print(f"File mới đã được lưu tại: {output_file_path}")
+    except Exception as e:
+        print(f"Đã xảy ra lỗi: {e}")
+if __name__ == "__main__":
+    folder_path = "D:\\speech2text-whisper\\data"
+    file_name = "CommonVoice_test.json"
+    lowercase_transcripts(folder_path, file_name)

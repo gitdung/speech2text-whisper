@@ -1,1 +1,3 @@
-model_name: "vinai/PhoWhisper-large"
+#model_name: "vinai/PhoWhisper-tiny"
+model_name: "vinai/PhoWhisper-base"
+#model_name: "nguyenvulebinh/wav2vec2-base-vietnamese-250h"
