@@ -6,3 +6,4 @@ finetuning_recipe/whisper-base-vi
 **/__pycache__
 /data
 /frontend/.gradio
+/audio
