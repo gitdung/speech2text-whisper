@@ -59,19 +59,19 @@ wav_audio_data = st_audiorec()
 if wav_audio_data is not None:
     if len(wav_audio_data) > 44:
         st.success("🎉 Ghi âm thành công! Đang phát lại âm thanh...")
+        file_path = os.path.join(AUDIO_SAVE_PATH, "recorded_audio.wav")
 
         if st.button("Lưu file âm thanh"):
-            file_path = os.path.join(AUDIO_SAVE_PATH, "recorded_audio.wav")
-
-            # Save audio file
+            # Lưu file âm thanh
             with open(file_path, "wb") as f:
                 f.write(wav_audio_data)
 
             st.success(f"✅ File đã được lưu thành công tại: `{file_path}`")
             st.audio(file_path, format="audio/wav")
 
+        # Kiểm tra nếu nút nhận diện được bấm
         if st.button("Nhận diện âm thanh từ ghi âm"):
-            if os.path.exists(file_path):
+            if os.path.exists(file_path):  # Đảm bảo file đã được lưu
                 with open(file_path, "rb") as audio_file:
                     files = {"file": ("recorded_audio.wav", audio_file, "audio/wav")}
                     response = requests.post(BACKEND_URL, files=files)
