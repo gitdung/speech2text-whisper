@@ -5,8 +5,6 @@ from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
 import torch
 from jiwer import wer
 
-
-# Load và tiền xử lý tệp âm thanh
 def load_audio(file_path, target_sr=16000):
     waveform, sr = torchaudio.load(file_path)
     if sr != target_sr:
@@ -15,7 +13,6 @@ def load_audio(file_path, target_sr=16000):
     return waveform.squeeze(0), target_sr
 
 
-# Inference trên mô hình Wav2Vec2
 def transcribe_audio(file_path, processor, model):
     waveform, sr = load_audio(file_path)
     inputs = processor(waveform, sampling_rate=sr, return_tensors="pt", padding=True)
@@ -25,8 +22,6 @@ def transcribe_audio(file_path, processor, model):
     transcription = processor.batch_decode(predicted_ids, skip_special_tokens=True)[0]
     return transcription
 
-
-# Đọc JSON, duyệt file và tính WER
 def process_json(json_path, audio_folder, model_name="nguyenvulebinh/wav2vec2-base-vietnamese-250h"):
     # Load processor và model
     processor = Wav2Vec2Processor.from_pretrained(model_name)

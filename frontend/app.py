@@ -33,7 +33,6 @@ st.subheader("Kéo và thả file âm thanh")
 uploaded_file = st.file_uploader("Chọn một file âm thanh (định dạng WAV)", type=["wav"])
 
 if uploaded_file is not None:
-    # Save the uploaded file
     file_path = os.path.join(AUDIO_SAVE_PATH, uploaded_file.name)
     with open(file_path, "wb") as f:
         f.write(uploaded_file.read())

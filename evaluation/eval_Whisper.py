@@ -5,8 +5,6 @@ import torch
 from transformers import AutoProcessor, WhisperForConditionalGeneration
 from jiwer import wer
 
-
-# Load và tiền xử lý tệp âm thanh
 def load_audio(file_path, target_sr=16000):
     waveform, sr = torchaudio.load(file_path)
     if sr != target_sr:
@@ -14,38 +12,29 @@ def load_audio(file_path, target_sr=16000):
         waveform = resampler(waveform)
     return waveform.squeeze(0), target_sr
 
-
-# Inference trên mô hình PhoWhisper
 def transcribe_audio(file_path, processor, model, target_length=3000):
     waveform, sr = load_audio(file_path)
     inputs = processor(waveform, sampling_rate=sr, return_tensors="pt", padding=True)
 
-    # Lấy đặc trưng mel từ processor
     mel_features = inputs["input_features"]
 
-    # Kiểm tra và điều chỉnh độ dài mel_features
+    # check len
     if mel_features.size(-1) < target_length:
-        # Padding nếu độ dài nhỏ hơn 3000
+        # padding
         pad_length = target_length - mel_features.size(-1)
         mel_features = torch.nn.functional.pad(mel_features, (0, pad_length))
     elif mel_features.size(-1) > target_length:
-        # Cắt bớt nếu độ dài lớn hơn 3000
         mel_features = mel_features[:, :, :target_length]
 
-    # Chạy mô hình để dự đoán
     with torch.no_grad():
         predicted_ids = model.generate(mel_features)
     transcription = processor.batch_decode(predicted_ids, skip_special_tokens=True)[0]
     return transcription
 
-
-# Đọc JSON, duyệt file và tính WER
-def process_json(json_path, audio_folder, model_name="vinai/PhoWhisper-tiny"):
-    # Load processor và model PhoWhisper
+def process_json(json_path, audio_folder, model_name="vinai/Whisper-tiny"):
     processor = AutoProcessor.from_pretrained(model_name)
     model = WhisperForConditionalGeneration.from_pretrained(model_name)
 
-    # Đọc file JSON
     with open(json_path, "r", encoding="utf-8") as file:
         data = json.load(file)
 
@@ -54,10 +43,9 @@ def process_json(json_path, audio_folder, model_name="vinai/PhoWhisper-tiny"):
 
     for entry in data:
         audio_file = entry["audio_path"]
-        audio_path = os.path.join(audio_folder, audio_file)  # Kết hợp folder và file name
+        audio_path = os.path.join(audio_folder, audio_file)
         ground_truth = entry["transcript"]
 
-        # Kiểm tra file âm thanh có tồn tại không
         if not os.path.exists(audio_path):
             print(f"Audio file not found: {audio_path}")
             entry.update({
@@ -68,7 +56,7 @@ def process_json(json_path, audio_folder, model_name="vinai/PhoWhisper-tiny"):
             results.append(entry)
             continue
 
-        # Dự đoán transcript
+        # transcript
         print(f"Processing file: {audio_path}")
         try:
             predicted_transcript = transcribe_audio(audio_path, processor, model)
